@@ -1,0 +1,23 @@
+[workspace]
+members = [
+  "node",
+  "game",
+]
+resolver = "2"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[patch.crates-io]
+z4-engine = { path = "../z4/engine" }
+z4-types = { path = "../z4/types" }
+z4-bevy = { path = "../z4-bevy" }
+bevy-web3 = { path = "../bevy-web3" }
