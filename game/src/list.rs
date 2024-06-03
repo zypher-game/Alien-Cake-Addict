@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use bevy_egui::{egui, EguiContexts};
-use bevy_web3::{EthWallet, RecvError, Token, H160};
+use bevy_web3::{EthWallet, RecvError, Token, H160, U256};
 use z4_bevy::RoomMarket;
 
 use crate::{
@@ -111,7 +111,7 @@ pub fn show(
         let mut playings = vec![];
 
         for room in rooms {
-            if room.http.is_some() {
+            if room.websocket.is_some() {
                 playings.push(room);
                 continue;
             }
@@ -189,7 +189,7 @@ pub fn show(
 
                     if ui.button("Play").clicked() {
                         game.room = room.room;
-                        game.server = room.http.clone().unwrap();
+                        game.server = room.websocket.clone().unwrap();
                         next_state.set(GameState::Playing);
                     }
                 });
@@ -227,7 +227,12 @@ pub fn create(
                 let pid_bytes = game.peer.peer_id().0;
                 let data = game
                     .contract
-                    .encode("createRoom", &[Token::Address(H160(pid_bytes))]);
+                    .encode("createRoom", &[
+                        Token::Uint(U256::zero()),
+                        Token::Bool(false),
+                        Token::Address(H160(pid_bytes)),
+                        Token::FixedBytes(vec![0u8;32])
+                    ]);
                 wallet.send(&game.account, game.contract.address, data);
             }
             Interaction::Hovered => {

@@ -15,7 +15,7 @@ use z4_bevy::{
     fetch_room_market, fetch_room_status, handle_room_market, handle_room_status, PeerKey, RoomId,
     RoomMarket, Z4ClientPlugin,
 };
-use z4_types::contracts::DEMO_ABI;
+use z4_types::contracts::SIMPLE_GAME_ABI;
 
 use play::{Cake, Cell, Player};
 use style::{BOARD_SIZE_I, BOARD_SIZE_J};
@@ -147,14 +147,12 @@ impl Game {
             PeerKey::generate(&mut rand::thread_rng())
         };
 
-        let address = "0x827a03c076eDf91FD1D095F696Aaf45BA67Da6cE"; // opbnb
+        let address = "0x8d40E727b38F307fc5db83D2AB10B76dc3fA2590"; // opbnb-testnet
+        // let address = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // localhost
 
-        // let address = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; // localhost
-
-        let contract = Contract::load(address, DEMO_ABI.as_bytes());
         Game {
             peer,
-            contract,
+            contract: Contract::load(address, SIMPLE_GAME_ABI.as_bytes()),
             chain: 0,
             account: Default::default(),
             room: 0,
@@ -181,10 +179,12 @@ impl Game {
 
 fn init(mut room_market: ResMut<RoomMarket>, game: Res<Game>) {
     // TODO game init from chain
-    room_market.url = "https://aca.cymple.tech".to_owned(); // testnet
+    // room_market.url = "https://aca.cymple.tech".to_owned(); // testnet
+    room_market.url = "http://127.0.0.1:8080".to_owned(); // localhost
 
-    // room_market.url = "http://127.0.0.1:8080".to_owned(); // localhost
+    // setup room_market
     room_market.game = game.contract.address();
+    room_market.contract = Contract::load(&room_market.game, SIMPLE_GAME_ABI.as_bytes());
 }
 
 fn setup_2d_cameras(mut commands: Commands) {

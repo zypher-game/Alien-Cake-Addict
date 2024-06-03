@@ -83,7 +83,7 @@ pub fn show(mut commands: Commands, market: Res<RoomMarket>, mut game: ResMut<Ga
                     parent.spawn(TextBundle::from_section(
                         format!(
                             "Server: {}",
-                            waiting.http.as_ref().unwrap_or(&"...".to_owned())
+                            waiting.websocket.as_ref().unwrap_or(&"...".to_owned())
                         ),
                         TextStyle {
                             font_size: 30.,
@@ -91,10 +91,10 @@ pub fn show(mut commands: Commands, market: Res<RoomMarket>, mut game: ResMut<Ga
                         },
                     ));
 
-                    if waiting.http.is_some() && game.countdown == 0 {
+                    if waiting.websocket.is_some() && game.countdown == 0 {
                         game.countdown = 10;
                         game.room = waiting.room;
-                        game.server = waiting.http.clone().unwrap();
+                        game.server = waiting.websocket.clone().unwrap();
                     }
                 }
 

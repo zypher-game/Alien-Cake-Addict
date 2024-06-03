@@ -1,15 +1,10 @@
 use rand::Rng;
-use rand_chacha::{
-    rand_core::{RngCore, SeedableRng},
-    ChaChaRng,
-};
+use rand_chacha::{rand_core::SeedableRng, ChaChaRng};
 use std::collections::HashMap;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use z4_engine::{
-    address_hex, json, simple_game_result,
-    request::{message_channel, run_p2p_channel, run_ws_channel, ChannelMessage},
-    Address, DefaultParams, Error, HandleResult, Handler, Param, Peer, PeerId, PeerKey, Result,
-    RoomId, SecretKey, Task, Tasks, Value,
+    address_hex, hex_address, json, simple_game_result, Address, DefaultParams, Error,
+    HandleResult, Handler, PeerId, Result, RoomId, Task, Tasks, Value,
 };
 
 const BOARD_SIZE_I: usize = 14;
@@ -71,7 +66,16 @@ impl GameHandler {
 
     // TODO over game
     fn over(&self) -> (Vec<u8>, Vec<u8>) {
-        (vec![], vec![])
+        let mut players: Vec<(Address, u32)> = self
+            .accounts
+            .iter()
+            .map(|(_, (account, player))| (hex_address(account).unwrap(), player.score))
+            .collect();
+        players.sort_by(|(_, sa), (_, sb)| sb.cmp(sa));
+        let winners: Vec<Address> = players.iter().map(|(a, _s)| *a).collect();
+
+        let rank = simple_game_result(&winners);
+        (rank, vec![])
     }
 }
 
@@ -153,12 +157,6 @@ impl Task for CakeTask {
 impl Handler for GameHandler {
     type Param = DefaultParams;
 
-    /// accept params when submit to chain
-    async fn accept(_peers: &[(Address, PeerId, [u8; 32])]) -> Vec<u8> {
-        vec![]
-    }
-
-    /// create new room when submmited success
     async fn create(
         peers: &[(Address, PeerId, [u8; 32])],
         _params: Vec<u8>,
@@ -168,11 +166,11 @@ impl Handler for GameHandler {
         let accounts = peers
             .iter()
             .enumerate()
-            .map(|(i, (aid, pid, _))| {
+            .map(|(i, (account, peer, _pk))| {
                 (
-                    *pid,
+                    *peer,
                     (
-                        address_hex(aid),
+                        address_hex(account),
                         Player {
                             position: INIT_POSITIONS[i],
                             score: 0,
@@ -187,9 +185,9 @@ impl Handler for GameHandler {
         let mut prng = ChaChaRng::from_seed([0u8; 32]);
 
         let board = (0..BOARD_SIZE_I)
-            .map(|i| {
+            .map(|_i| {
                 (0..BOARD_SIZE_J)
-                    .map(|j| prng.gen_range(-0.1..0.1))
+                    .map(|_j| prng.gen_range(-0.1..0.1))
                     .collect()
             })
             .collect();
@@ -207,8 +205,7 @@ impl Handler for GameHandler {
         )
     }
 
-    /// when player online
-    async fn online(&mut self, player: PeerId) -> Result<HandleResult<Self::Param>> {
+    async fn online(&mut self, peer: PeerId) -> Result<HandleResult<Self::Param>> {
         println!("Peer: {:?} connected =====", peer);
         let mut result = HandleResult::default();
         let players_status = self.status();
@@ -217,12 +214,6 @@ impl Handler for GameHandler {
         Ok(result)
     }
 
-    /// when player offline
-    async fn offline(&mut self, player: PeerId) -> Result<HandleResult<Self::Param>> {
-        Ok(HandleResult::default())
-    }
-
-    /// handle message in a room
     async fn handle(
         &mut self,
         player: PeerId,
@@ -251,7 +242,6 @@ fn do_move(
     player: PeerId,
     params: DefaultParams,
 ) -> Result<HandleResult<DefaultParams>> {
-    println!("{:?} moving... {:?}", player, params);
     if params.0.len() != 2 {
         return Err(Error::Params);
     }

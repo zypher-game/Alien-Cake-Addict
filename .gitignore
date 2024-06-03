@@ -1,5 +1,7 @@
 target
 /.tdn
+/engine/.tdn
+/node/.tdn
+/node/.env
 /Cargo.lock
 .DS_Store
-.env

@@ -24,7 +24,7 @@ features = [
 ]
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-z4-bevy = { version = "0.1", default-features = false, features = ["wasm"] }
+z4-bevy = { version = "0.0.1", default-features = false, features = ["wasm"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-z4-bevy = { version = "0.1", default-features = false, features = ["ws"] }
+z4-bevy = { version = "0.0.1", default-features = false, features = ["ws"] }

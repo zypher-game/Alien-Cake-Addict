@@ -437,7 +437,7 @@ pub fn ws_message(
                     }
                     _ => {}
                 },
-                Err(err) => error!("WS: {}", err),
+                Err(err) => error!("WS: {}, message: {}", err, message),
             },
             Err(RecvError::Empty) => {}
             Err(RecvError::Closed) => commands.entity(entity).despawn(),
