@@ -179,8 +179,8 @@ impl Game {
 
 fn init(mut room_market: ResMut<RoomMarket>, game: Res<Game>) {
     // TODO game init from chain
-    // room_market.url = "https://aca.cymple.tech".to_owned(); // testnet
-    room_market.url = "http://127.0.0.1:8080".to_owned(); // localhost
+    room_market.url = "https://aca.zypher.dev/rpc".to_owned(); // testnet
+    //room_market.url = "http://127.0.0.1:8080".to_owned(); // localhost
 
     // setup room_market
     room_market.game = game.contract.address();

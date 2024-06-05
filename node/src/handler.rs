@@ -161,6 +161,7 @@ impl Handler for GameHandler {
         peers: &[(Address, PeerId, [u8; 32])],
         _params: Vec<u8>,
         _rid: RoomId,
+        seed: [u8; 32]
     ) -> (Self, Tasks<Self>) {
         let timeout = Instant::now();
         let accounts = peers
@@ -182,7 +183,7 @@ impl Handler for GameHandler {
             .collect();
 
         // TODO prove rng
-        let mut prng = ChaChaRng::from_seed([0u8; 32]);
+        let mut prng = ChaChaRng::from_seed(seed);
 
         let board = (0..BOARD_SIZE_I)
             .map(|_i| {
