@@ -14,7 +14,7 @@ hex = "0.4"
 serde = "1.0"
 serde_json = "1.0"
 rand = "0.8"
-z4-types = "0.0.1"
+z4-types = "0.1"
 
 [dependencies.web-sys]
 version = "0.3"
@@ -24,7 +24,7 @@ features = [
 ]
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-z4-bevy = { version = "0.0.1", default-features = false, features = ["wasm"] }
+z4-bevy = { version = "0.1", default-features = false, features = ["wasm"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-z4-bevy = { version = "0.0.1", default-features = false, features = ["ws"] }
+z4-bevy = { version = "0.1", default-features = false, features = ["ws"] }

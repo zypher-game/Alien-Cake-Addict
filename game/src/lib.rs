@@ -147,7 +147,7 @@ impl Game {
             PeerKey::generate(&mut rand::thread_rng())
         };
 
-        let address = "0x8d40E727b38F307fc5db83D2AB10B76dc3fA2590"; // opbnb-testnet
+        let address = "0x8f4a23F5B0C989614F05cBfba5aa6454D65079BC"; // opbnb-testnet
         // let address = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // localhost
 
         Game {
@@ -179,8 +179,8 @@ impl Game {
 
 fn init(mut room_market: ResMut<RoomMarket>, game: Res<Game>) {
     // TODO game init from chain
-    room_market.url = "https://aca.zypher.dev/rpc".to_owned(); // testnet
-    //room_market.url = "http://127.0.0.1:8080".to_owned(); // localhost
+    //room_market.url = "https://aca.zypher.dev/rpc".to_owned(); // testnet
+    room_market.url = "http://127.0.0.1:8080".to_owned(); // localhost
 
     // setup room_market
     room_market.game = game.contract.address();

@@ -231,7 +231,8 @@ pub fn create(
                         Token::Uint(U256::zero()),
                         Token::Bool(false),
                         Token::Address(H160(pid_bytes)),
-                        Token::FixedBytes(vec![0u8;32])
+                        Token::FixedBytes(vec![0u8;32]),
+                        Token::FixedBytes(vec![0u8;32]),
                     ]);
                 wallet.send(&game.account, game.contract.address, data);
             }
