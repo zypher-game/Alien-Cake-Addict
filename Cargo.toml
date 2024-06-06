@@ -18,7 +18,5 @@ opt-level = 1
 opt-level = 3
 
 [patch.crates-io]
-z4-engine = { path = "../z4/engine" }
-z4-types = { path = "../z4/types" }
-z4-bevy = { path = "../z4-bevy" }
-bevy-web3 = { path = "../bevy-web3" }
+z4-bevy = { git = "https://github.com/zypher-game/z4-bevy" }
+bevy-web3 = { git = "https://github.com/cympletech/bevy-web3" }

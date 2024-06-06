@@ -144,6 +144,7 @@ pub fn show(
                             &[
                                 Token::Uint(room.room.into()),
                                 Token::Address(H160(pid_bytes)),
+                                Token::FixedBytes(vec![0u8;32]),
                             ],
                         );
                         wallet.send(&game.account, game.contract.address, data);
