@@ -14,11 +14,20 @@ pub fn connect_wallet(mut commands: Commands) {
                 height: Val::Percent(100.0),
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
                 ..default()
             },
             ..default()
         })
         .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Only support metamask & opbnb testnet now",
+                TextStyle {
+                    font_size: 30.,
+                    ..default()
+                },
+            ));
+
             parent
                 .spawn(ButtonBundle {
                     style: Style {
@@ -29,6 +38,10 @@ pub fn connect_wallet(mut commands: Commands) {
                         justify_content: JustifyContent::Center,
                         // vertically center child text
                         align_items: AlignItems::Center,
+                        margin: UiRect {
+                            top: Val::Percent(5.),
+                            ..default()
+                        },
                         ..default()
                     },
                     border_color: BorderColor(Color::BLACK),
