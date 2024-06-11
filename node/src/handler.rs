@@ -6,6 +6,7 @@ use z4_engine::{
     address_hex, hex_address, json, simple_game_result, Address, DefaultParams, Error,
     HandleResult, Handler, PeerId, Result, RoomId, Task, Tasks, Value,
 };
+use serde::Serialize;
 
 const BOARD_SIZE_I: usize = 14;
 const BOARD_SIZE_J: usize = 21;
@@ -22,10 +23,14 @@ pub struct Player {
     timeout: Instant,
 }
 
-pub struct Operation {
-    player: PeerId,
-    position: (usize, usize),
-    eaten: bool,
+#[derive(Serialize)]
+pub enum Operation {
+    // player, position
+    Move(Address, usize, usize),
+    // index, position
+    CakeCreated(u32, usize, usize),
+    // index
+    CakeMissed(u32),
 }
 
 pub struct Cake {
@@ -75,7 +80,9 @@ impl GameHandler {
         let winners: Vec<Address> = players.iter().map(|(a, _s)| *a).collect();
 
         let rank = simple_game_result(&winners);
-        (rank, vec![])
+        let proof = vec![];
+
+        (rank, proof)
     }
 }
 
@@ -114,6 +121,7 @@ impl Task for CakeTask {
                 if let Some(next) = clears.pop() {
                     let cake = state.alive_cakes.remove(next);
                     eaten_response(&mut results, cake.index, Default::default(), 0);
+                    state.operations.push(Operation::CakeMissed(cake.index));
                     state.cakes.push(cake);
                 } else {
                     break;
@@ -147,6 +155,7 @@ impl Task for CakeTask {
 
             // broadcast
             cake_response(&mut results, index, position);
+            state.operations.push(Operation::CakeCreated(index, position.0, position.1));
         }
 
         Ok(results)
@@ -266,6 +275,7 @@ fn do_move(
 
     let mut results = HandleResult::default();
     move_response(&mut results, account.clone(), position);
+    handler.operations.push(Operation::Move(hex_address(account).unwrap(), position.0, position.1));
 
     if !clears.is_empty() {
         loop {
