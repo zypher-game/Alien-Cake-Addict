@@ -3,9 +3,14 @@
 use methods::{
     ACA_ZK_ELF, ACA_ZK_ID
 };
-use risc0_zkvm::{default_prover, ExecutorEnv};
+use risc0_zkvm::{get_prover_server, ExecutorEnv};
+use risc0_zkvm::sha::Digest;
+use risc0_zkvm::{ProverOpts, InnerReceipt};
+use risc0_zkvm::stark_to_snark;
 use ethers_core::types::Address;
 use serde::Serialize;
+use risc0_zkvm::recursion::identity_p254;
+use sha2::{Sha256, Digest as _};
 
 #[derive(Serialize)]
 pub enum Operation {
@@ -18,14 +23,14 @@ pub enum Operation {
 }
 
 pub fn prove(operations: &Vec<Operation>, output: &[u8]) -> Result<Vec<u8>, ()> {
+    // RISC0_PROVER
+    let prover = get_prover_server(&ProverOpts::groth16()).unwrap();
+
     let env = ExecutorEnv::builder()
         .write(operations)
         .unwrap()
         .build()
         .unwrap();
-
-    // Obtain the default prover.
-    let prover = default_prover();
 
     // Proof information by proving the specified ELF binary.
     // This struct contains the receipt along with statistics about execution of the guest
@@ -36,8 +41,6 @@ pub fn prove(operations: &Vec<Operation>, output: &[u8]) -> Result<Vec<u8>, ()> 
     // extract the receipt.
     let receipt = prove_info.receipt;
 
-    let output2: Vec<u8> = receipt.journal.decode().unwrap();
-    assert_eq!(output, &output2);
 
     // The receipt was verified at the end of proving, but the below code is an
     // example of how someone else could verify this receipt.
@@ -46,7 +49,30 @@ pub fn prove(operations: &Vec<Operation>, output: &[u8]) -> Result<Vec<u8>, ()> 
         .unwrap();
 
     // TODO stark to snark
-    Ok(vec![])
+    let proof = match receipt.inner {
+        InnerReceipt::Groth16(ref proof) => {
+            proof.seal.clone()
+        }
+        InnerReceipt::Succinct(ref proof) => {
+            panic!("NOT SUPPORT 1");
+        }
+        _ => {
+            panic!("NOT SUPPORT 2");
+        }
+    };
+
+    let (committed_vk_digest, committed_input_digest): (Digest, Digest) =
+        receipt.journal.decode().unwrap();
+
+    let mut hasher = Sha256::new();
+    hasher.update(output);
+    let commited2 = hasher.finalize();
+
+    assert_eq!(committed_input_digest.as_bytes(), &commited2[..]);
+
+    let image_ID = ACA_ZK_ID;
+
+    Ok(proof)
 }
 
 
