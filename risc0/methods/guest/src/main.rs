@@ -20,8 +20,11 @@ fn simple_game_result(ranks: &[Address]) -> Vec<u8> {
 }
 
 fn main() {
+    println!("read cycle:{}", env::cycle_count());
     // read the input
     let operations: Vec<Operation> = env::read();
+
+    println!("read cycle:{}", env::cycle_count());
 
     let mut cakes: HashMap<u32, (usize, usize)> = HashMap::new();
     let mut scores: HashMap<Address, u32> = HashMap::new();
@@ -64,4 +67,6 @@ fn main() {
     let winners: Vec<Address> = players.iter().map(|(a, _s)| *a).collect();
     let rank = simple_game_result(&winners);
     env::commit(&rank);
+
+    println!("read cycle:{}", env::cycle_count());
 }

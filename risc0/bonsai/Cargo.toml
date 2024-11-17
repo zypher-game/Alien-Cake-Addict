@@ -1,0 +1,28 @@
+[package]
+name = "poker-bonsai"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+poker-methods.workspace = true
+poker-core.workspace = true
+bincode.workspace = true
+bonsai-sdk.workspace = true
+bytemuck.workspace = true
+dotenv.workspace = true
+hex.workspace = true
+risc0-zkvm.workspace = true
+
+[dev-dependencies]
+ark-ff.workspace = true
+ark-bn254.workspace = true
+ark-serialize.workspace = true
+hex.workspace = true
+num-bigint.workspace = true
+num-integer.workspace = true
+num-traits.workspace = true
+
+[features]
+default = []
+serialize0 = ["poker-core/serialize0"]
+deserialize0 = ["poker-core/deserialize0"]

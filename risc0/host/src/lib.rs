@@ -18,7 +18,7 @@ pub enum Operation {
     CakeMissed(u32),
 }
 
-pub fn prove(operations: &Vec<Operation>, output: &[u8]) -> Result<([u8; 32], Vec<u8>), ()> {
+pub fn prove(operations: &Vec<Operation>, output: &[u8]) -> Result<([u32; 8], Vec<u8>), ()> {
     let env = ExecutorEnv::builder()
         .write(operations)
         .unwrap()
@@ -28,10 +28,16 @@ pub fn prove(operations: &Vec<Operation>, output: &[u8]) -> Result<([u8; 32], Ve
     // TODO check BONSAI APIKEY
 
     // RISC0_PROVER
-    let prover = get_prover_server(&ProverOpts::groth16()).unwrap();
+    let prover = get_prover_server(&ProverOpts::succinct()).unwrap();
+
+    let now = std::time::Instant::now();
     let prove_info = prover.prove(env, ACA_ZK_ELF).unwrap();
+    println!("prove time: {}", now.elapsed().as_secs());
+
     let receipt = prove_info.receipt;
     receipt.verify(ACA_ZK_ID).unwrap();
+
+    return Ok((ACA_ZK_ID, vec![]));
 
     let proof = match receipt.inner {
         InnerReceipt::Groth16(ref proof) => proof.seal.clone(),
@@ -49,7 +55,7 @@ pub fn prove(operations: &Vec<Operation>, output: &[u8]) -> Result<([u8; 32], Ve
 
     assert_eq!(committed_input_digest.as_bytes(), &commited2[..]);
 
-    Ok(ACA_ZK_ID, proof)
+    Ok((ACA_ZK_ID, proof))
 }
 
 #[cfg(test)]
@@ -73,27 +79,33 @@ mod tests {
         let player3 = H160([3u8; 20]);
         let player4 = H160([4u8; 20]);
 
-        let operations = vec![
-            Operation::CakeCreated(1, 1, 1),
-            Operation::CakeMissed(1),
-            Operation::CakeCreated(2, 2, 2),
-            Operation::Move(player1, 1, 1),
-            Operation::Move(player2, 1, 1),
-            Operation::Move(player3, 1, 1),
-            Operation::Move(player4, 1, 1),
-            Operation::Move(player1, 1, 2),
-            Operation::Move(player1, 2, 2),
-            Operation::Move(player4, 2, 1),
-            Operation::Move(player4, 2, 2),
-            Operation::CakeCreated(3, 3, 3),
-            Operation::Move(player1, 2, 3),
-            Operation::Move(player1, 3, 3),
-            Operation::CakeCreated(4, 4, 4),
-            Operation::Move(player4, 2, 3),
-            Operation::Move(player4, 2, 4),
-            Operation::Move(player4, 3, 4),
-            Operation::Move(player4, 4, 4),
-        ];
+        // 20 * 10 = 500
+        let mut operations = vec![];
+        for i in 0..50 {
+            operations.extend(vec![
+                Operation::CakeCreated(i, 1, 1),
+                Operation::CakeMissed(i),
+                Operation::CakeCreated(i+1, 2, 2),
+                Operation::Move(player1, 1, 1),
+                Operation::Move(player2, 1, 1),
+                Operation::Move(player3, 1, 1),
+                Operation::Move(player4, 1, 1),
+                Operation::Move(player1, 1, 2),
+                Operation::Move(player1, 2, 2),
+                Operation::Move(player4, 2, 1),
+                Operation::Move(player4, 2, 2),
+                Operation::CakeCreated(i+2, 3, 3),
+                Operation::Move(player1, 2, 3),
+                Operation::Move(player1, 3, 3),
+                Operation::CakeCreated(i+3, 4, 4),
+                Operation::Move(player4, 2, 3),
+                Operation::Move(player4, 2, 4),
+                Operation::Move(player4, 3, 4),
+                Operation::Move(player4, 4, 4),
+                Operation::Move(player3, 4, 4),
+            ]);
+        }
+        println!("operations: {}", operations.len());
 
         let rank = simple_game_result(&[player1, player4]);
         prove(&operations, &rank).unwrap();
